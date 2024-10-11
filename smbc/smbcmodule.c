@@ -45,23 +45,17 @@ PyObject *NoSpaceError;
 PyObject *NotDirectoryError;
 PyObject *ConnectionRefusedError;
 
-#if PY_MAJOR_VERSION >= 3
-  #define PYSMBC_INIT_ERROR NULL
-  static struct PyModuleDef smbc_module = {
-    PyModuleDef_HEAD_INIT,
-    "_smbc",
-    NULL,
-    -1,
-    SmbcMethods
-  };
+#define PYSMBC_INIT_ERROR NULL
+static struct PyModuleDef smbc_module = {
+  PyModuleDef_HEAD_INIT,
+  "_smbc",
+  NULL,
+  -1,
+  SmbcMethods
+};
 
-	#define PYSMBC_PROTOTYPE_HEADER PyObject * PyInit__smbc (void)
-	#define PYSMBC_MODULE_CREATOR PyModule_Create (&smbc_module)
-#else
-	#define PYSMBC_INIT_ERROR
-	#define PYSMBC_PROTOTYPE_HEADER void init_smbc (void)
-	#define PYSMBC_MODULE_CREATOR Py_InitModule ("_smbc", SmbcMethods)
-#endif
+#define PYSMBC_PROTOTYPE_HEADER PyObject * PyInit__smbc (void)
+#define PYSMBC_MODULE_CREATOR PyModule_Create (&smbc_module)
 
 PYSMBC_PROTOTYPE_HEADER
 {
@@ -162,9 +156,7 @@ PYSMBC_PROTOTYPE_HEADER
   Py_INCREF(ConnectionRefusedError);
   PyModule_AddObject(m, "ConnectionRefusedError", ConnectionRefusedError);
 
-#if PY_MAJOR_VERSION >= 3
   return m;
-#endif
 }
 
 void pysmbc_SetFromErrno()
