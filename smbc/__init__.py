@@ -1,4 +1,6 @@
-from smbc import xattr
+from . import xattr
+from .dirtypes import FileInfo, Attribute
+
 from _smbc import *
 
 
