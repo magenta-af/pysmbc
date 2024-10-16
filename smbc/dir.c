@@ -214,12 +214,60 @@ Dir_getdents (Dir *self)
     return result;
   } /*Dir_getdents*/
 
+
+static PyObject *
+Dir_readdirplus (Dir *self)
+  {
+    PyObject* result = NULL;
+    SMBCCTX *ctx;
+
+    debugprintf ("-> Dir_readdirplus()\n");
+    ctx = self->context->context;
+    do /*once*/
+      {
+        const smbc_readdirplus_fn fn_readdirplus = smbc_getFunctionReaddirPlus(ctx);
+        errno = 0;
+
+        const struct libsmb_file_info* r = fn_readdirplus(ctx, self->dir);
+        if (!r && errno)
+          {
+            pysmbc_SetFromErrno();
+            debugprintf ("<- Dir_readdirplus() EXCEPTION\n");
+            break;
+          } /*if */
+
+        if (r)
+          {
+            return Py_BuildValue(
+                    "(KHIIddddss)",
+                    r->size,
+                    r->attrs,
+                    r->uid,
+                    r->gid,
+                    r->btime_ts.tv_sec + (r->btime_ts.tv_nsec / 1.0e9),
+                    r->mtime_ts.tv_sec + (r->btime_ts.tv_nsec / 1.0e9),
+                    r->atime_ts.tv_sec + (r->btime_ts.tv_nsec / 1.0e9),
+                    r->ctime_ts.tv_sec + (r->btime_ts.tv_nsec / 1.0e9),
+                    r->name,
+                    r->short_name);
+          } else {
+            Py_RETURN_NONE;
+          }
+    } while (0);
+    return result;
+  } /*Dir_readdirplus*/
+
+
 PyMethodDef Dir_methods[] =
   {
     { "getdents",
       (PyCFunction) Dir_getdents, METH_NOARGS,
       "getdents() -> list\n\n"
       "@return: a list of L{smbc.Dirent} objects" },
+    { "readdirplus",
+      (PyCFunction) Dir_readdirplus, METH_NOARGS,
+      "readdirplus() -> \n\n"
+      "@return: a libsmb_file_info struct converted to a tuple" },
 
     { NULL } /* Sentinel */
   };
@@ -318,4 +366,3 @@ PyMethodDef Dir_methods[] =
       Dir_new,                   /* tp_new */
     };
 #endif
-
